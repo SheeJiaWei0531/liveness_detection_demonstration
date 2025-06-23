@@ -66,7 +66,7 @@ async function initLivenessDetection() {
 async function setupCamera() {
   const video = document.getElementById('video');
   const constraints = {
-    video: { width: { ideal: 360 }, height: { ideal: 270 }, frameRate: { ideal: 30 } }
+    video: { width: { ideal: 270 }, height: { ideal: 360 }, frameRate: { ideal: 30 } }
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   video.srcObject = stream;
