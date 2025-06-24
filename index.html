@@ -4,12 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ML Pipeline Demonstration</title>
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
+    /* ----- Global reset -------------------------------------------------- */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+    html, body            { height: 100%; }
+
     body {
       display: flex;
+      flex-direction: column;      /* CHANGE: column layout keeps order tidy */
       justify-content: center;
       align-items: center;
       font-family: 'Poppins', sans-serif;
@@ -17,53 +21,92 @@
       color: #fff;
       text-align: center;
     }
+
+    /* ----- Video + Canvas ----------------------------------------------- */
+    /* CHANGE: wrapped video & canvas for easy positioning */
+    .video-wrapper { position: relative; display: inline-block; margin-bottom: 1rem; }
+
+    video#video,
+    canvas#videoCanvas {
+      width: 270px;              /* portrait (width < height) */
+      height: 360px;             /* CHANGE: swapped dims */
+      border-radius: 1rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      display: none;             /* reveal via JS */
+    }
+    #instruction {
+      position: absolute;
+      top: -50px; left: 50%; transform: translateX(-50%);
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 0.5rem;
+      font-size: 1rem; font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      display: none;             /* shown via JS */
+    }
+    #time {
+      position: absolute;
+      top: -100px; left: 50%; transform: translateX(-50%);
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 0.5rem;
+      font-size: 1rem; font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      display: none;             /* shown via JS */
+    }
+
+    /* ----- Form container ------------------------------------------------ */
     .container {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       padding: 2rem 3rem;
       border-radius: 1.5rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       max-width: 500px;
       width: 90%;
     }
-    /* Updated video aspect: width 270, height 360 */
-    video#video {
-      width: 270px;
-      height: 360px;
-      border-radius: 1rem;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      margin-bottom: 1rem;
-      display: none;
-    }
+
     h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    p { font-size: 1.125rem; margin-bottom: 1rem; line-height: 1.4; }
-    input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: none; border-radius: 0.5rem; font-size: 1rem; }
+    p  { font-size: 1.125rem; margin-bottom: 1rem; line-height: 1.4; }
+
+    input {
+      width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+      border: none; border-radius: 0.5rem; font-size: 1rem;
+    }
+
     button {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      padding: 0.75rem 2rem;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-      border-radius: 2rem;
-      cursor: pointer;
+      background: rgba(255, 255, 255, 0.2);
+      border: none; padding: 0.75rem 2rem;
+      font-size: 1rem; font-weight: 600; color: #fff;
+      border-radius: 2rem; cursor: pointer;
       transition: background 0.3s ease, transform 0.2s ease;
       margin-top: 0.5rem;
     }
-    button:hover { background: rgba(255,255,255,0.4); transform: translateY(-2px); }
+    button:hover    { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
     button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
   </style>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
+
+  <!-- CHANGE: wrapped media elements for easy overlay -->
+  <div class="video-wrapper">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="videoCanvas" width="270" height="360"></canvas>
+    <p id="instruction"></p>  <!-- overlay text -->
+    <p id="time"></p>  <!-- overlay text -->
+  </div>
+
   <div class="container" id="container">
     <h1>Welcome!</h1>
     <p>This is a demonstration of the ML pipeline. Please click below to begin.</p>
     <button id="startBtn">Start Demo</button>
   </div>
 
+  <!-- (Inline form JS unchanged / minimal) -------------------------------- -->
   <script>
-    const container = document.getElementById('container');
-    const startBtn = document.getElementById('startBtn');
+    const container      = document.getElementById('container');
+    const startBtn       = document.getElementById('startBtn');
 
     startBtn.addEventListener('click', collectName);
 
@@ -71,44 +114,37 @@
       container.innerHTML = `
         <h1>Hello!</h1>
         <p>Please enter your name:</p>
-        <input type="text" id="nameInput" placeholder="Your name">
-        <button id="nextBtn" disabled>Next</button>
-      `;
+        <input id="nameInput" type="text" placeholder="Your name" />
+        <button id="nextBtn" disabled>Next</button>`;
       const nameInput = document.getElementById('nameInput');
-      const nextBtn = document.getElementById('nextBtn');
-      nameInput.addEventListener('input', () => nextBtn.disabled = !nameInput.value.trim());
-      nextBtn.addEventListener('click', () => collectEmail(nameInput.value.trim()));
+      const nextBtn   = document.getElementById('nextBtn');
+      nameInput.addEventListener('input',()=>nextBtn.disabled=!nameInput.value.trim());
+      nextBtn.addEventListener('click',()=>collectEmail(nameInput.value.trim()));
     }
 
     function collectEmail(name) {
-      container.innerHTML = `
+      container.innerHTML=`
         <h1>Great, ${name}!</h1>
         <p>Please enter your email:</p>
         <p>Only Gmail supported.</p>
-        <input type="email" id="emailInput" placeholder="you@gmail.com">
-        <button id="sendBtn" disabled>Send</button>
-      `;
-      const emailInput = document.getElementById('emailInput');
-      const sendBtn = document.getElementById('sendBtn');
-      emailInput.addEventListener('input', () => {
-        sendBtn.disabled = !/^[^\s@]+@gmail\.com$/.test(emailInput.value.trim());
-      });
-      sendBtn.addEventListener('click', () => showCompletion(name, emailInput.value.trim()));
+        <input id="emailInput" type="email" placeholder="you@gmail.com" />
+        <button id="sendBtn" disabled>Send</button>`;
+      const emailInput=document.getElementById('emailInput');
+      const sendBtn=document.getElementById('sendBtn');
+      emailInput.addEventListener('input',()=>sendBtn.disabled=!/^[^\s@]+@gmail\.com$/.test(emailInput.value.trim()));
+      sendBtn.addEventListener('click',()=>showCompletion(name,emailInput.value.trim()));
     }
 
-    function showCompletion(name, email) {
-      localStorage.setItem('userName', name);
-      localStorage.setItem('userEmail', email);
-      container.innerHTML = `
+    function showCompletion(name,email) {
+      localStorage.setItem('userName',name);
+      localStorage.setItem('userEmail',email);
+      container.innerHTML=`
         <h1>Thank you, ${name}!</h1>
         <p>Email received: <strong>${email}</strong></p>
-        <p>…complete within 8 seconds.</p>
-        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>
-      `;
+        <p>Due to resource constraints, kindly complete the session within 10 seconds.</p>
+        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
     }
   </script>
-
-  <!-- TensorFlow.js and models -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.22.0/dist/tf-backend-webgl.min.js"></script>
@@ -117,4 +153,3 @@
   <script src="script.js" defer></script>
 </body>
 </html>
-
