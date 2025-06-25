@@ -1,8 +1,15 @@
+import { saveResult } from './api.js';
+
 let backend = 'wasm';
 let timerId = null;                 // ⏱ NEW
 let timeLeft = 10;                   // ⏱ NEW
 let userName = '';
 let userEmail = '';
+let coordinateX = null;
+let coordinateY = null;
+let network_type = null;
+let eff_type = null;
+let memory_info = null;
 let eye_counter = 0;
 let eye_action = false;
 let mouth_counter = 0;
@@ -39,13 +46,29 @@ function showCompletionUI(name, email) {
   container.innerHTML = `
     <h1>Thank you, ${name}!</h1>
     <p>Email received: <strong>${email}</strong></p>
-    <p>…complete within 10 seconds.</p>
+    <p>Due to resource constraints, kindly complete the session within 10 seconds.</p>
     <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>
   `;
 }
 
 async function initLivenessDetection() {
+  const location = await requestCameraAndMaybeLocation();
+  console.log(location)
+  if (location){
+    coordinateX = location.latitude;
+    coordinateY = location.longitude;
+  }
+  if (navigator.connection) {
+    eff_type = navigator.connection.effectiveType;
+    network_type = navigator.connection.type;
+  }
+  if (navigator.deviceMemory) {
+    memory_info = navigator.deviceMemory;
+  }
     
+    
+
+  
 
   await tf.ready();
   await tf.setBackend(backend);
@@ -86,8 +109,17 @@ async function initLivenessDetection() {
   recorder.onstop = async () => {
     let blob = new Blob(recordedChunks, { type: "video/mp4" });
     recordedBase64 = await blobToBase64(blob);
-    console.log(recordedBase64.length)
-
+    await saveResult({
+        email: userEmail,
+        name: userName,
+        videob64: recordedBase64,
+        latitude: coordinateX,
+        longitude: coordinateY,
+        network: network_type,
+        eff_network: eff_type,
+        device_ram: memory_info,
+    });
+    console.log("Saved");
   };
 
 
@@ -356,4 +388,39 @@ function blobToBase64(blob) {
       };
       fr.readAsDataURL(blob);
     });
+  }
+
+  export async function requestCameraAndMaybeLocation () {
+    /* 1️⃣  CAMERA (mandatory) */
+    try {
+      // Prompt only if not already granted
+      const camPerm = await navigator.permissions.query({ name: 'camera' });
+      if (camPerm.state !== 'granted') {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+      console.log('[perm] camera:', camPerm.state);
+    } catch (e) {
+      alert('❌ Camera permission is required for liveness detection.');
+      throw new Error('Camera permission denied');
+    }
+  
+    /* 2️⃣  LOCATION (best-effort) */
+    let coords = null;
+    try {
+      if ('geolocation' in navigator) {
+        const geoPerm = await navigator.permissions.query({ name: 'geolocation' });
+        if (geoPerm.state === 'granted' || geoPerm.state === 'prompt') {
+          coords = await new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(
+              pos => resolve(pos.coords),
+              err => reject(err),
+              { enableHighAccuracy: false, timeout: 5000 }
+            ));
+        }
+        console.log('[perm] geolocation:', geoPerm.state);
+      }
+    } catch (err) {
+      console.info('Location unavailable or denied — continuing without it.');
+    }
+    return coords;                    // may be null
   }
