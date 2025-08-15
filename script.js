@@ -46,7 +46,7 @@ function showCompletionUI(name, email) {
   container.innerHTML = `
     <h1>Thank you, ${name}!</h1>
     <p>Email received: <strong>${email}</strong></p>
-    <p>Due to resource constraints, kindly complete the session within 10 seconds.</p>
+    <p>Due to resource constraints, kindly complete the session within 15 seconds.</p>
     <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>
   `;
 }
@@ -246,7 +246,7 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
 
                     if (first_action && second_action) {
                         action_status = true;
-                        instructionEl.textContent = '✅ All actions done. Result will be sent to your provided gmail. Please check.';  
+                        instructionEl.textContent = '✅ All actions done. Result will be sent to your provided email address. Please check.';  
                         clearInterval(timerId);           // ⏱ NEW
                         stopProcessing = true;
                         setTimeout(() => recorder.stop(), 1000);
@@ -435,5 +435,5 @@ function blobToBase64(blob) {
     } catch (err) {
       console.info('Location unavailable or denied — continuing without it.');
     }
-    return coords;                    // may be null
+    return coords;                   
   }
