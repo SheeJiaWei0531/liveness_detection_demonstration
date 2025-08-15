@@ -126,12 +126,19 @@
       container.innerHTML=`
         <h1>Great, ${name}!</h1>
         <p>Please enter your email:</p>
-        <p>Only Gmail supported.</p>
+        <p>Only valid email address is supported.</p>
         <input id="emailInput" type="email" placeholder="you@gmail.com" />
         <button id="sendBtn" disabled>Send</button>`;
       const emailInput=document.getElementById('emailInput');
       const sendBtn=document.getElementById('sendBtn');
-      emailInput.addEventListener('input',()=>sendBtn.disabled=!/^[^\s@]+@gmail\.com$/.test(emailInput.value.trim()));
+      const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      const update = () => { sendBtn.disabled = !isValidEmail(emailInput.value.trim()); };
+      emailInput.addEventListener('input', update);
+      emailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && isValidEmail(emailInput.value.trim())) {
+          sendBtn.click();
+        }
+      });
       sendBtn.addEventListener('click',()=>showCompletion(name,emailInput.value.trim()));
     }
 
@@ -141,7 +148,7 @@
       container.innerHTML=`
         <h1>Thank you, ${name}!</h1>
         <p>Email received: <strong>${email}</strong></p>
-        <p>Due to resource constraints, kindly complete the session within 10 seconds.</p>
+        <p>Due to resource constraints, kindly complete the session within 15 seconds.</p>
         <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
     }
   </script>

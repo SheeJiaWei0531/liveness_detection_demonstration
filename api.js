@@ -1,7 +1,7 @@
 export async function saveResult (data = {}) {
 	return axios({
 		method: 'POST',
-		url: 'https://clouduntechsg.asuscomm.com:15360' + '/analyze',
+		url: 'https://homenas226b803d.synology.me:13420' + '/analyze',
 		data,
 		headers: {
 			'Content-Type': 'application/json'

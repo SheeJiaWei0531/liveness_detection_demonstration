@@ -2,7 +2,7 @@ import { saveResult } from './api.js';
 
 let backend = 'wasm';
 let timerId = null;                 // ⏱ NEW
-let timeLeft = 10;                   // ⏱ NEW
+let timeLeft = 15;                   // ⏱ NEW
 let userName = '';
 let userEmail = '';
 let coordinateX = null;
@@ -88,24 +88,37 @@ async function initLivenessDetection() {
   function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
   
   const [firstAction, secondAction] = shuffle(CHECKERS).slice(0, 2);
-  instructionEl.textContent = firstAction.name;
-  instructionEl.style.display = 'block';   
+
+  instructionEl.textContent = "Please look at the camera and stay still...";
+  instructionEl.style.display = 'block';
+
+  setTimeout(() => {
+    instructionEl.textContent = firstAction.name;
   
-  timerId = setInterval(() => {                             // ⏱ NEW
-    
-    timeLeft--;                                        // ⏱ NEW
-    if (timeLeft <= 0) {                                    // ⏱ NEW
-      clearInterval(timerId);                               // ⏱ NEW
-      instructionEl.textContent = '⏰ Time expired!';        // ⏱ NEW
-      stopProcessing = true; 
-      recorder.stop();
-    }  
-    time_counter.textContent = `Time left: ${timeLeft}`;
-    time_counter.style.display = 'block';                                                       // ⏱ NEW
-  }, 1000);    
+    // start countdown timer
+    timerId = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(timerId);
+        instructionEl.textContent = '⏰ Time expired!';
+        stopProcessing = true; 
+        recorder.stop();
+      }  
+      time_counter.textContent = `Time left: ${timeLeft}`;
+      time_counter.style.display = 'block';
+    }, 1000);    
+  
+    // start detection after 2 seconds still step
+    DetectAndProcess(video, faceDetector, lmModel, firstAction, secondAction);
+  
+  }, 3000); // 2 seconds wait before detection starts
 
 
-  DetectAndProcess(video, faceDetector, lmModel, firstAction, secondAction);
+
+
+
+
+  // DetectAndProcess(video, faceDetector, lmModel, firstAction, secondAction);
   recorder.onstop = async () => {
     let blob = new Blob(recordedChunks, { type: "video/mp4" });
     recordedBase64 = await blobToBase64(blob);
