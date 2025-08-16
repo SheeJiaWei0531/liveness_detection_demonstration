@@ -28,7 +28,7 @@
 
     video#video,
     canvas#videoCanvas {
-      width: 270px;              /* portrait (width < height) */
+      width: 360px;              /* portrait (width < height) */
       height: 360px;             /* CHANGE: swapped dims */
       border-radius: 1rem;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -92,7 +92,7 @@
   <!-- CHANGE: wrapped media elements for easy overlay -->
   <div class="video-wrapper">
     <video id="video" autoplay muted playsinline></video>
-    <canvas id="videoCanvas" width="270" height="360"></canvas>
+    <canvas id="videoCanvas" width="360" height="360"></canvas>
     <p id="instruction"></p>  <!-- overlay text -->
     <p id="time"></p>  <!-- overlay text -->
   </div>

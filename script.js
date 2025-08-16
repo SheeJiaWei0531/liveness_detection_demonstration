@@ -80,9 +80,9 @@ async function initLivenessDetection() {
   const faceDetector = await initializeMediaPipe();
   const lmModel = await loadModel();
   const CHECKERS = [
-    { action: "eye", name: "Please Blink Your Eyes",   fn: check_eye  },
-    { action: "mouth", name: "Please Open Mouth", fn: check_mouth },
-    { action: "head", name: "Please Slightly Turn Your Head Left/Right",  fn: check_head},
+    { action: "eye", name: "Please blink your eyes",   fn: check_eye  },
+    { action: "mouth", name: "Please open your mouth and then close it", fn: check_mouth },
+    { action: "head", name: "Please slightly turn your head left/right",  fn: check_head},
   ];
   
   function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -111,7 +111,7 @@ async function initLivenessDetection() {
     // start detection after 2 seconds still step
     DetectAndProcess(video, faceDetector, lmModel, firstAction, secondAction);
   
-  }, 3000); // 2 seconds wait before detection starts
+  }, 3000); // 3 seconds wait before detection starts
 
 
 
@@ -144,7 +144,7 @@ async function setupCamera() {
   const video = document.getElementById('video');
   
   const constraints = {
-    video: { width: { ideal: 270 }, height: { ideal: 360 }, frameRate: { ideal: 30 } }
+    video: { width: { ideal: 360 }, height: { ideal: 360 }, frameRate: { ideal: 30 } }
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   video.srcObject = stream;
@@ -246,10 +246,10 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
 
                     if (first_action && second_action) {
                         action_status = true;
-                        instructionEl.textContent = '✅ All actions done. Result will be sent to your provided email address. Please check.';  
+                        instructionEl.textContent = '✅ All actions done. Result will be sent to your provided email address. You may close the browser.';  
                         clearInterval(timerId);           // ⏱ NEW
                         stopProcessing = true;
-                        setTimeout(() => recorder.stop(), 1000);
+                        setTimeout(() => recorder.stop(), 2000);
                     }
                     
                 }
@@ -266,7 +266,7 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
 }
 
 function check_eye({eyeL, eyeR}) {
-    const eye_threshold = 0.15;
+    const eye_threshold = 0.10;
     
     if (!eye_action && eyeL < eye_threshold && eyeR < eye_threshold) {
         eye_action = true;
@@ -293,8 +293,8 @@ function check_mouth({mar}) {
 }
 
 function check_head({yaw}) {
-    const first_threshold = 0.75;
-    const second_threshold = 0.25;
+    const first_threshold = 0.7;
+    const second_threshold = 0.3;
 
     if (!yaw_action && yaw < first_threshold && yaw > second_threshold) {
         yaw_action = true;
