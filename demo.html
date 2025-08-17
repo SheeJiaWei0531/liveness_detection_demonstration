@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>ML Pipeline Demonstration</title>
+
+  <!-- Performance: preconnect for Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ----- Global reset -------------------------------------------------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body            { height: 100%; background: #0b0b14; }
+    p {
+        white-space: pre-line;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 800px at 20% 10%, #2b2f77 0%, rgba(43,47,119,0) 60%),
+                  radial-gradient(1000px 700px at 80% 20%, #6a2f91 0%, rgba(106,47,145,0) 55%),
+                  linear-gradient(135deg, #1a1f3b, #0f1129 55%, #0b0b14);
+      color: #fff;
+      text-align: center;
+      min-height: 100dvh;
+    }
+
+    /* ----- Video + Canvas ----------------------------------------------- */
+    .video-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+    }
+
+    video#video,
+    canvas#videoCanvas {
+      width: 360px;
+      height: 360px;
+      display: none; /* revealed by JS */
+    }
+
+    /* Overlays (positioned ABOVE the wrapper now) */
+    /* Place labels absolutely relative to wrapper */
+    #instruction {
+    position: absolute;
+    top: -50px; left: 50%; transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 0.5rem;
+    font-size: 1rem; font-weight: 600;
+    white-space: pre-line;   
+    white-space: nowrap;
+    pointer-events: none;
+    display: none;
+  }
+
+    #time {
+    position: absolute;
+    top: -100px; left: 50%; transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 0.5rem;
+    font-size: 1rem; font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    display: none;
+  }
+
+    /* Time higher, instruction just below it */
+    #time        { top: -125px; }
+    #instruction { top: -90px; }
+    /* ----- Form container ------------------------------------------------ */
+    .container {
+      background: rgba(255, 255, 255, 0.09);
+      padding: 2rem 3rem;
+      border-radius: 1.25rem;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255,255,255,0.06) inset;
+      max-width: 520px;
+      width: min(92%, 520px);
+      backdrop-filter: blur(6px);
+    }
+
+    h1 { font-size: 2.4rem; margin-bottom: 0.6rem; letter-spacing: 0.3px; }
+    p  { font-size: 1.05rem; margin-bottom: 1rem; line-height: 1.5; color: #e9e9f4; }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(18, 20, 42, 0.6);
+      color: #ffffff;
+      border-radius: 0.6rem;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset;
+    }
+    input::placeholder { color: #b6b6c9; }
+    input:focus {
+      border-color: #8ca2ff;
+      box-shadow: 0 0 0 3px rgba(140,162,255,0.18);
+    }
+
+    button {
+      background: linear-gradient(135deg, #7a88ff, #7ed0ff);
+      border: none;
+      padding: 0.75rem 2rem;
+      font-size: 1rem; font-weight: 700; color: #0e1030;
+      border-radius: 2rem; cursor: pointer;
+      transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+      margin-top: 0.5rem;
+      box-shadow: 0 10px 20px rgba(126, 208, 255, 0.25);
+    }
+    button:hover    { transform: translateY(-1px); filter: brightness(1.05); }
+    button:active   { transform: translateY(0);   filter: brightness(0.98); }
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+      background: linear-gradient(135deg, #6570c2, #5aa0bd);
+      color: rgba(14,16,48,0.6);
+    }
+
+    /* Footer (SSL badge) */
+    footer {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 10;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06) inset;
+      user-select: none;
+    }
+    .ssl-badge {
+      display: block;
+      width: 140px;
+      height: auto;
+      border: 0;
+    }
+
+    /* Small screens */
+    @media (max-width: 420px) {
+      video#video, canvas#videoCanvas { width: 320px; height: 320px; }
+      .container { padding: 1.25rem 1rem; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Media region -->
+  <div class="video-wrapper">
+    <!-- Labels live in here, above the video -->
+    <p id="time"></p>
+    <p id="instruction"></p>
+  
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="videoCanvas" width="360" height="360" aria-hidden="true"></canvas>
+  </div>
+
+  <!-- App container -->
+  <div class="container" id="container">
+    <h1>Welcome!</h1>
+    <p>This demonstration showcases the end-to-end integration of a computer vision pipeline.
+        Please click below to begin.</p>
+    <button id="startBtn">Start Demo</button>
+  </div>
+
+  <!-- Inline UI flow (unchanged core flow) -->
+  <script>
+    const container = document.getElementById('container');
+    const startBtn  = document.getElementById('startBtn');
+
+    startBtn.addEventListener('click', collectName);
+
+    function collectName() {
+      container.innerHTML = `
+        <h1>Hello!</h1>
+        <p>Please enter your name:</p>
+        <input id="nameInput" type="text" placeholder="Your name" autocomplete="name" />
+        <button id="nextBtn" disabled>Next</button>`;
+      const nameInput = document.getElementById('nameInput');
+      const nextBtn   = document.getElementById('nextBtn');
+      const update = () => nextBtn.disabled = !nameInput.value.trim();
+      nameInput.addEventListener('input', update);
+      nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && nameInput.value.trim()) nextBtn.click();
+      });
+      update();
+      nextBtn.addEventListener('click', () => collectEmail(nameInput.value.trim()));
+    }
+
+    function collectEmail(name) {
+      container.innerHTML = `
+        <h1>Great, ${name}!</h1>
+        <p>Please enter your email: 
+        Only valid email address is supported.
+        Results will be sent to provided email address within 10 minutes. </p>
+        <input id="emailInput" type="email" placeholder="you@gmail.com" autocomplete="email" inputmode="email" />
+        <button id="sendBtn" disabled>Next</button>`;
+      const emailInput = document.getElementById('emailInput');
+      const sendBtn    = document.getElementById('sendBtn');
+      const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      const update = () => { sendBtn.disabled = !isValidEmail(emailInput.value.trim()); };
+      emailInput.addEventListener('input', update);
+      emailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && isValidEmail(emailInput.value.trim())) sendBtn.click();
+      });
+      update();
+      sendBtn.addEventListener('click', () => showCompletion(name, emailInput.value.trim()));
+    }
+
+    function showCompletion(name, email) {
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userEmail', email);
+      container.innerHTML = `
+        <h1>Thank you, ${name}!</h1>
+        <p>Email received: <strong>${email}</strong> 
+        Due to resource constraints, kindly complete the session within 15 seconds.</p>
+        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
+    }
+  </script>
+
+  <!-- Vendor libs (defer keeps parse fast; order preserved) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.22.0/dist/tf-backend-webgl.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu@4.22.0/dist/tf-backend-webgpu.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js" defer></script>
+
+  <!-- Your app logic (kept separate) -->
+  <script type="module" src="./script.js"></script>
+
+  <!-- SSL badge -->
+  <footer>
+    <a href="https://secure.trust-provider.com/" target="_blank" rel="noopener">
+      <img
+        class="ssl-badge"
+        src="https://www.mysecuressls.com/images/seals/vodien_secure_01.png"
+        alt="SSL Secured"
+        loading="lazy"
+        decoding="async"
+        width="140"
+        height="54"
+      />
+    </a>
+  </footer>
+</body>
+</html>

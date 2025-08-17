@@ -1,163 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ML Pipeline Demonstration</title>
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>CV Pipeline</title>
+
+  <!-- Performance: preconnect for Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap"
+    rel="stylesheet"
+  />
+
   <style>
-    /* ----- Global reset -------------------------------------------------- */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body            { height: 100%; }
-
-    body {
-      display: flex;
-      flex-direction: column;      /* CHANGE: column layout keeps order tidy */
-      justify-content: center;
-      align-items: center;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-      text-align: center;
+    :root{
+      --bg-0:#0b0b14;
+      --fg-0:#ffffff;
+      --fg-1:#e9e9f4;
+      --card:#16182d;
+      --card-glass:rgba(255,255,255,0.06);
+      --accent-0:#7a88ff;
+      --accent-1:#7ed0ff;
+      --border-0:rgba(255,255,255,0.10);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      min-height:100dvh;
+      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--fg-0);
+      background:
+        radial-gradient(1100px 700px at 15% 10%, #2b2f77 0%, rgba(43,47,119,0) 60%),
+        radial-gradient(900px 600px at 85% 20%, #6a2f91 0%, rgba(106,47,145,0) 55%),
+        linear-gradient(135deg,#1a1f3b,#0f1129 55%,var(--bg-0));
+    }
+    .page{
+      max-width:1100px;
+      margin:0 auto;
+      padding:48px clamp(16px,3vw,32px);
+      display:grid;
+      gap:28px;
+    }
+    header h1{
+      font-size:clamp(1.8rem,2.8vw,2.6rem);
+      letter-spacing:0.3px;
+      margin-bottom:10px;
+    }
+    header p.kicker{
+      color:var(--fg-1);
+      font-size:clamp(1rem,1.6vw,1.1rem);
+      opacity:.9;
     }
 
-    /* ----- Video + Canvas ----------------------------------------------- */
-    /* CHANGE: wrapped video & canvas for easy positioning */
-    .video-wrapper { position: relative; display: inline-block; margin-bottom: 1rem; }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04));
+      border:1px solid var(--border-0);
+      border-radius:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+      padding:22px clamp(18px,2vw,26px);
+    }
+    .stack{display:grid;gap:14px}
+    .muted{color:var(--fg-1)}
 
-    video#video,
-    canvas#videoCanvas {
-      width: 360px;              /* portrait (width < height) */
-      height: 360px;             /* CHANGE: swapped dims */
-      border-radius: 1rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-      display: none;             /* reveal via JS */
+    .links{display:flex; flex-wrap:wrap; gap:12px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px; padding:10px 16px; border-radius:12px; text-decoration:none;
+      font-weight:700; color:#0e1030; background:linear-gradient(135deg,var(--accent-0),var(--accent-1));
+      box-shadow:0 10px 22px rgba(126,208,255,0.22);
+      transition:transform .15s ease, filter .2s ease, box-shadow .2s ease;
     }
-    #instruction {
-      position: absolute;
-      top: -50px; left: 50%; transform: translateX(-50%);
-      padding: 0.25rem 0.75rem;
-      background: rgba(0, 0, 0, 0.45);
-      border-radius: 0.5rem;
-      font-size: 1rem; font-weight: 600;
-      white-space: nowrap;
-      pointer-events: none;
-      display: none;             /* shown via JS */
+    .btn:hover{transform:translateY(-1px); filter:brightness(1.05)}
+    .btn.secondary{
+      color:var(--fg-0); background:transparent; border:1px solid var(--border-0);
+      box-shadow:none;
     }
-    #time {
-      position: absolute;
-      top: -100px; left: 50%; transform: translateX(-50%);
-      padding: 0.25rem 0.75rem;
-      background: rgba(0, 0, 0, 0.45);
-      border-radius: 0.5rem;
-      font-size: 1rem; font-weight: 600;
-      white-space: nowrap;
-      pointer-events: none;
-      display: none;             /* shown via JS */
+    .cta{
+      display:flex; align-items:center; justify-content:center; padding:22px;
+      border-radius:16px; border:1px dashed var(--border-0);
+      background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
     }
 
-    /* ----- Form container ------------------------------------------------ */
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2rem 3rem;
-      border-radius: 1.5rem;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      max-width: 500px;
-      width: 90%;
+    .diagram{
+      border-radius:14px; overflow:hidden;
+      background:#111325;
+      border:1px solid var(--border-0);
+      padding:8px;
     }
+    .mermaid{--mermaid-font-family:'Poppins',ui-sans-serif,system-ui; color:var(--fg-0)}
 
-    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    p  { font-size: 1.125rem; margin-bottom: 1rem; line-height: 1.4; }
-
-    input {
-      width: 100%; padding: 0.75rem; margin-bottom: 1rem;
-      border: none; border-radius: 0.5rem; font-size: 1rem;
+    .grid{
+      display:grid; gap:18px;
+      grid-template-columns: 1fr;
     }
-
-    button {
-      background: rgba(255, 255, 255, 0.2);
-      border: none; padding: 0.75rem 2rem;
-      font-size: 1rem; font-weight: 600; color: #fff;
-      border-radius: 2rem; cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
-      margin-top: 0.5rem;
+    @media(min-width:860px){
+      .grid{ grid-template-columns: 1.1fr 1.2fr; align-items:start; }
     }
-    button:hover    { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    ul{padding-left:1.1rem}
+    li{margin:.35rem 0}
   </style>
 </head>
 <body>
-
-  <!-- CHANGE: wrapped media elements for easy overlay -->
-  <div class="video-wrapper">
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="videoCanvas" width="360" height="360"></canvas>
-    <p id="instruction"></p>  <!-- overlay text -->
-    <p id="time"></p>  <!-- overlay text -->
+  <div style="position:absolute; top:10px; left:10px; z-index:1000;">
+    <a href="https://secure.trust-provider.com/" target="_blank" rel="noopener">
+      <img
+        class="ssl-badge"
+        src="https://www.mysecuressls.com/images/seals/vodien_secure_01.png"
+        alt="SSL Secured"
+        loading="lazy"
+        decoding="async"
+        width="140"
+        height="54"
+      />
+    </a>
   </div>
+  <main class="page">
 
-  <div class="container" id="container">
-    <h1>Welcome!</h1>
-    <p>This is a demonstration of the ML pipeline. Please click below to begin.</p>
-    <button id="startBtn">Start Demo</button>
-  </div>
+    <!-- 1) Introduction -->
+    <header>
+      <h1><span style="font-weight:600">Hi, I am Jia Wei, a senior AI Engineer (Computer Vision). </span></h1>
+      <p class="kicker">
+        I am passionate about leveraging my expertise to create meaningful impact in the industry while also making
+         the world a better and smarter place.
+      </p>
+    </header>
 
-  <!-- (Inline form JS unchanged / minimal) -------------------------------- -->
-  <script>
-    const container      = document.getElementById('container');
-    const startBtn       = document.getElementById('startBtn');
+    <section class="card stack" aria-labelledby="intro">
+      <h2 id="intro">About this page</h2>
+      <p class="muted">
+        Instead of just reading my skills in a resume, this page demonstrates them in action — 
+        showcasing my ability to design and implement an end-to-end computer vision solution pipeline in a production setting. 
+        The system highlights robustness, scalability, and clear separation of concerns across the frontend, ingress, and backend services.
+      </p>
+      <div class="links" role="group" aria-label="External links">
+        <a class="btn" href="https://www.linkedin.com/in/sheejiawei" target="_blank" rel="noopener">
+          LinkedIn Profile
+        </a>
+        <a class="btn secondary" href="https://homenas226b803d.synology.me:5001/d/s/14UIrKkIoxCvvtgIOTuY5fo4ynMCITIg/gEe-q8yMFuBlpFiyffa39q_o5MAV-Qdg-Z7SA4go6hAw" target="_blank" rel="noopener">
+          Download Resume (PDF)
+        </a>
+      </div>
+    </section>
 
-    startBtn.addEventListener('click', collectName);
+    <!-- 2) What you will experience (single Nginx) -->
+    <section class="card stack" aria-labelledby="flow">
+      <h2 id="flow">What you will experience</h2>
+      <div class="grid">
+        <div class="stack">
+          <p class="muted">
+            High-level request/data flow for this demo: A single <strong>Nginx</strong> container acts as the reverse proxy, 
+            proxying static asset requests to a separate static-content container and routing <code>/api/*</code> to the backend
+            processing server.
+          </p>
+          <ul>
+            <li><strong>Nginx (Docker)</strong> acts as the single entry point — proxies static asset requests to the Static Content container 
+                and routes <code>API calls</code> to the Processing Service container.</li>
+            <li><strong>Static Content (Docker)</strong> serves the built HTML/JS/CSS/model files for the UI.</li>
+            <li><strong>Processing Service (Docker)</strong> ingests data, executes the CV pipeline, and deliver results via email.</li>
+            <li><strong>Browser</strong> loads the UI, performs on-device video processing with TFJS, 
+                handles user interaction, and calls the API for backend tasks.</li>
+          </ul>
+        </div>
 
-    function collectName() {
-      container.innerHTML = `
-        <h1>Hello!</h1>
-        <p>Please enter your name:</p>
-        <input id="nameInput" type="text" placeholder="Your name" />
-        <button id="nextBtn" disabled>Next</button>`;
-      const nameInput = document.getElementById('nameInput');
-      const nextBtn   = document.getElementById('nextBtn');
-      nameInput.addEventListener('input',()=>nextBtn.disabled=!nameInput.value.trim());
-      nextBtn.addEventListener('click',()=>collectEmail(nameInput.value.trim()));
-    }
+        <div class="diagram">
+          <!-- If your renderer still errors, replace <br/> with plain text labels (no line breaks). -->
+          <div class="mermaid">
+            flowchart TD
+              %% --- Actors / Services ---
+              user["User (Browser)"]
+              nginx["Nginx<br/>Reverse Proxy (Docker)"]
+              staticSrv["Static Contents<br/>(Docker)"]
+              backend[" Processing API<br/>(Docker)"]
+              mail["Email to User"]
+              ui["UI Loaded in Browser<br/>(HTML / JS / CSS / Model Files)"]
+            
+              %% --- Static content delivery path ---
+              subgraph A["Machine A: NGINX, Static Content Delivery"]
+                user -- "Make request" --> nginx
+                nginx --> staticSrv
+                staticSrv --> ui
+                
+              end
+            
+              %% --- In-app API call path ---
+              subgraph B["Machine B: Data Processing"]
+                ui -- "API call" --> nginx
+                nginx -->|"/api/*"| backend
+                backend --> mail
 
-    function collectEmail(name) {
-      container.innerHTML=`
-        <h1>Great, ${name}!</h1>
-        <p>Please enter your email:</p>
-        <p>Only valid email address is supported.</p>
-        <input id="emailInput" type="email" placeholder="you@gmail.com" />
-        <button id="sendBtn" disabled>Send</button>`;
-      const emailInput=document.getElementById('emailInput');
-      const sendBtn=document.getElementById('sendBtn');
-      const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-      const update = () => { sendBtn.disabled = !isValidEmail(emailInput.value.trim()); };
-      emailInput.addEventListener('input', update);
-      emailInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && isValidEmail(emailInput.value.trim())) {
-          sendBtn.click();
-        }
-      });
-      sendBtn.addEventListener('click',()=>showCompletion(name,emailInput.value.trim()));
-    }
+              end
+            
+              %% --- Styling API edges in red ---
+              linkStyle 3 stroke:#FF0000,stroke-width:2px,color:#FF0000
+              linkStyle 4 stroke:#FF0000,stroke-width:2px,color:#FF0000
+            
+              %% --- Subgraph background colors ---
+              style A fill:#2d3748,stroke:#a0aec0,stroke-width:1px,color:#f7fafc
+              style B fill:#1a365d,stroke:#63b3ed,stroke-width:1px,color:#f7fafc
+            </div>
+        </div>
+      </div>
+    </section>
 
-    function showCompletion(name,email) {
-      localStorage.setItem('userName',name);
-      localStorage.setItem('userEmail',email);
-      container.innerHTML=`
-        <h1>Thank you, ${name}!</h1>
-        <p>Email received: <strong>${email}</strong></p>
-        <p>Due to resource constraints, kindly complete the session within 15 seconds.</p>
-        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
-    }
+    <!-- 3) CTA -->
+    <section class="cta">
+      <div class="stack" style="text-align:center; max-width:760px;">
+        <h2>Ready to experience a CV pipeline in production?</h2>
+        <p class="muted">
+            Launch the demo, follow the prompts and get your results straight to your inbox.
+        </p>
+        <div class="links" style="justify-content:center">
+          <!-- Point this href to your existing ML demo page -->
+          <a class="btn" href="./demo.html">Start the Live Demo</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mermaid (diagram renderer) -->
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "dark",
+      securityLevel: "loose",
+      flowchart: {
+        curve: "basis",
+        htmlLabels: true,
+        useMaxWidth: true,
+        diagramPadding: 8
+      }
+    });
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.22.0/dist/tf-backend-webgl.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu@4.22.0/dist/tf-backend-webgpu.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
-  <script type="module" src="./script.js"></script>
 </body>
 </html>
