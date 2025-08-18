@@ -2,7 +2,7 @@ import { saveResult } from './api.js';
 
 let backend = 'wasm';
 let timerId = null;                 
-let timeLeft = 15;                   
+let timeLeft = 12;                   
 let userName = '';
 let userEmail = '';
 let coordinateX = null;
@@ -64,7 +64,7 @@ function showCompletionUI(name, email) {
   container.innerHTML = `
     <h1>Thank you, ${name}!</h1>
     <p>Email received: <strong>${email}</strong></p>
-    <p>Due to resource constraints, kindly complete the session within 15 seconds.</p>
+    <p>Due to resource constraints, kindly complete the session within 12 seconds.</p>
     <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>
   `;
 }
