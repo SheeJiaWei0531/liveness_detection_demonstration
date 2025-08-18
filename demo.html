@@ -6,6 +6,15 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQNG7XZJFP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NQNG7XZJFP');
+  </script>
   <title>ML Pipeline Demonstration</title>
 
   <!-- Performance: preconnect for Google Fonts -->
@@ -182,7 +191,8 @@
     <h1>Welcome!</h1>
     <p>This demonstration showcases the end-to-end integration of a computer vision pipeline.
         Please click below to begin.</p>
-    <button id="startBtn">Start Demo</button>
+    <button id="startBtn" 
+    onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Start Demo' });">Start Demo</button>
   </div>
 
   <!-- Inline UI flow (unchanged core flow) -->
@@ -197,7 +207,8 @@
         <h1>Hello!</h1>
         <p>Please enter your name:</p>
         <input id="nameInput" type="text" placeholder="Your name" autocomplete="name" />
-        <button id="nextBtn" disabled>Next</button>`;
+        <button id="nextBtn" disabled 
+        onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Next Name' });">Next</button>`;
       const nameInput = document.getElementById('nameInput');
       const nextBtn   = document.getElementById('nextBtn');
       const update = () => nextBtn.disabled = !nameInput.value.trim();
@@ -216,7 +227,8 @@
         Only valid email address is supported.
         Results will be sent to provided email address within 10 minutes. </p>
         <input id="emailInput" type="email" placeholder="you@gmail.com" autocomplete="email" inputmode="email" />
-        <button id="sendBtn" disabled>Next</button>`;
+        <button id="sendBtn" disabled 
+        onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Next Email' });">Next</button>`;
       const emailInput = document.getElementById('emailInput');
       const sendBtn    = document.getElementById('sendBtn');
       const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -236,7 +248,8 @@
         <h1>Thank you, ${name}!</h1>
         <p>Email received: <strong>${email}</strong> 
         Due to resource constraints, kindly complete the session within 12 seconds.</p>
-        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
+        <button id="restartBtn" data-name="${name}" data-email="${email}" 
+        onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Start Liveness Detection' });">Start liveness detection</button>`;
     }
   </script>
 

@@ -6,6 +6,15 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQNG7XZJFP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NQNG7XZJFP');
+  </script>
   <title>Integration of CV Solution in Production</title>
 
   <!-- ADDED: Open Graph -->
@@ -145,10 +154,12 @@
         The system highlights robustness, scalability, and clear separation of concerns across the frontend, ingress, and backend services.
       </p>
       <div class="links" role="group" aria-label="External links">
-        <a class="btn" href="https://www.linkedin.com/in/sheejiawei" target="_blank" rel="noopener">
+        <a class="btn" href="https://www.linkedin.com/in/sheejiawei" target="_blank" rel="noopener" 
+        onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'LinkedIn Profile' });">
           LinkedIn Profile
         </a>
-        <a class="btn secondary" href="https://homenas226b803d.synology.me:5001/d/s/14UIrKkIoxCvvtgIOTuY5fo4ynMCITIg/gEe-q8yMFuBlpFiyffa39q_o5MAV-Qdg-Z7SA4go6hAw" target="_blank" rel="noopener">
+        <a class="btn secondary" href="https://homenas226b803d.synology.me:5001/d/s/14UIrKkIoxCvvtgIOTuY5fo4ynMCITIg/gEe-q8yMFuBlpFiyffa39q_o5MAV-Qdg-Z7SA4go6hAw" target="_blank" rel="noopener" 
+        onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Download Resume' });">
           Download Resume (PDF)
         </a>
       </div>
@@ -223,7 +234,8 @@
         </p>
         <div class="links" style="justify-content:center">
           <!-- Point this href to your existing ML demo page -->
-          <a class="btn" href="./demo.html">Start the Live Demo</a>
+          <a class="btn" href="./demo.html" 
+          onclick="gtag('event', 'click', { 'event_category': 'button', 'event_label': 'Start the Live Demo' });">Start the Live Demo</a>
         </div>
       </div>
     </section>
