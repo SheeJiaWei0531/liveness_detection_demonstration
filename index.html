@@ -118,6 +118,18 @@
   </style>
 </head>
 <body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
+  <script type="module">
+    import { ClickSave, idWithRand } from './api.js';
+    let session_id = null;
+    session_id = idWithRand();
+
+    try {
+      await ClickSave({ session_id: session_id });   // send it in the JSON body
+    } catch (err) {
+      console.error('ClickSave failed:', err);
+    }
+  </script>
   <div style="position:absolute; top:10px; left:10px; z-index:1000;">
     <a href="https://secure.trust-provider.com/" target="_blank" rel="noopener">
       <img
@@ -135,7 +147,7 @@
 
     <!-- 1) Introduction -->
     <header>
-      <h1><span style="font-weight:600">Hi, I am Jia Wei, a senior AI Engineer (Computer Vision). </span></h1>
+      <h1><span style="font-weight:600">Hi, I am Jia Wei, a senior AI Engineer (Computer Vision) </span></h1>
       <p class="kicker">
         I am passionate about leveraging my expertise to create meaningful impact in the industry while also making
          the world a better and smarter place.
