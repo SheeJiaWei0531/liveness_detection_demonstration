@@ -13,7 +13,7 @@
   <meta property="og:locale" content="en_SG" />
   <meta property="og:site_name" content="Computer Vision Solution" />
   <meta property="og:title" content="Computer Vision Solution" />
-  <meta property="og:image" content="https://github.com/SheeJiaWei0531/liveness_detection_demonstration/blob/master/images/AI_Engineer_website_small.jpg">
+  <meta property="og:image" content="https://raw.githubusercontent.com/SheeJiaWei0531/liveness_detection_demonstration/master/images/AI_Engineer_website.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:description" content="Production-style Computer Vision Pipeline: Nginx Proxy, Static Content Delivery, API Processing and Email Results." />
@@ -89,7 +89,7 @@
     }
     .btn:hover{transform:translateY(-1px); filter:brightness(1.05)}
     .btn.secondary{
-      color:var(--fg-0); background:transparent; border:1px solid var(--border-0);
+      color:var(--fg-0); background:transparent; border:none;
       box-shadow:none;
     }
     .cta{
@@ -123,12 +123,57 @@
     import { ClickSave, idWithRand } from './api.js';
     let session_id = null;
     session_id = idWithRand();
-
     try {
-      await ClickSave({ session_id: session_id });   // send it in the JSON body
+      await ClickSave({ 
+        session_id: session_id,
+        type: "page_init"
+       }); 
     } catch (err) {
       console.error('ClickSave failed:', err);
     }
+    document.addEventListener('click', async (e) => {
+        const link = e.target.closest('a.btn');
+        if (!link) return; 
+        const track = link.dataset.track;
+
+        if (track === 'whatsaspp') {
+          try {
+            await ClickSave({
+              session_id: session_id,
+              type: "click_whatsapp",
+            });
+          } catch (err) {
+            console.error('ClickSave failed:', err)
+          }
+        } else if (track === 'resume') {
+          try {
+            await ClickSave({
+              session_id: session_id,
+              type: "click_resume",
+            });
+          } catch (err) {
+            console.error('ClickSave failed:', err)
+          }
+        } else if (track === 'linkedin') {
+          try {
+            await ClickSave({
+              session_id: session_id,
+              type: "click_linkedin",
+            });
+          } catch (err) {
+            console.error('ClickSave failed:', err)
+          }
+        } else if (track === 'livedemo') {
+          try {
+            await ClickSave({
+              session_id: session_id,
+              type: "click_livedemo",
+            });
+          } catch (err) {
+            console.error('ClickSave failed:', err)
+          }
+        }
+      });
   </script>
   <div style="position:absolute; top:10px; left:10px; z-index:1000;">
     <a href="https://secure.trust-provider.com/" target="_blank" rel="noopener">
@@ -162,28 +207,28 @@
         The system highlights robustness, scalability, and clear separation of concerns across the frontend, ingress, and backend services.
       </p>
       <div class="links" role="group" aria-label="External links">
-        <a class="btn" href="https://www.linkedin.com/in/sheejiawei" target="_blank" rel="noopener">
+        <a class="btn" data-track="linkedin" href="https://www.linkedin.com/in/sheejiawei" target="_blank" rel="noopener">
           LinkedIn Profile
         </a>
-        <a class="btn" href="https://homenas226b803d.synology.me:5001/d/s/14UIrKkIoxCvvtgIOTuY5fo4ynMCITIg/gEe-q8yMFuBlpFiyffa39q_o5MAV-Qdg-Z7SA4go6hAw" target="_blank" rel="noopener">
+        <a class="btn" data-track="resume" href="https://homenas226b803d.synology.me:5001/d/s/14UIrKkIoxCvvtgIOTuY5fo4ynMCITIg/gEe-q8yMFuBlpFiyffa39q_o5MAV-Qdg-Z7SA4go6hAw" target="_blank" rel="noopener">
           Download Resume (PDF)
         </a>
         <a
-          class="btn"
+          class="btn secondary"
+          data-track="whatsaspp"
           href="https://wa.me/6588093968"
           target="_blank"
           rel="noopener"
-          aria-label="Contact me on WhatsApp"
         >
           <img
-            src="https://github.com/SheeJiaWei0531/liveness_detection_demonstration/blob/master/images/WhatsAppButtonGreenSmall.png"
+            src="https://raw.githubusercontent.com/SheeJiaWei0531/liveness_detection_demonstration/refs/heads/master/images/WhatsAppButtonGreenMedium.svg"
             loading="lazy" decoding="async"
             class="icon"
           />
-          WhatsApp Me
         </a>
       </div>
     </section>
+
 
     <!-- 2) What you will experience (single Nginx) -->
     <section class="card stack" aria-labelledby="flow">
@@ -254,7 +299,7 @@
         </p>
         <div class="links" style="justify-content:center">
           <!-- Point this href to your existing ML demo page -->
-          <a class="btn" href="./demo.html">Start the Live Demo</a>
+          <a class="btn" data-track="livedemo" href="./demo.html">Start the Live Demo</a>
         </div>
       </div>
     </section>

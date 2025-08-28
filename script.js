@@ -240,38 +240,58 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
                         second_action = true;
                     }
 
+                    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+                    const stopStream = (stream) => stream?.getTracks()?.forEach(t => t.stop());
+
                     if (first_action && second_action) {
-                        action_status = true;
-                        instructionEl.innerText = '✅ Done.\n Results will be sent to provided email address within 10 minutes. \n Please check your inbox or spam. \nYou may close the camera now.';
-                        clearInterval(timerId);
-                        stopProcessing = true;
-                        setTimeout(() => recorder.stop(), 2000);
-                        const closeBtn = document.createElement("button");
-                        closeBtn.innerText = "Close Camera";
-                        closeBtn.style.marginTop = "1rem";
-                        closeBtn.style.padding = "0.5rem 1rem";
-                        closeBtn.style.borderRadius = "0.5rem";
-                        closeBtn.style.border = "none";
-                        closeBtn.style.cursor = "pointer";
+                      action_status = true;
+                      if (timerId) clearInterval(timerId);
+                      stopProcessing = true;
 
-                        closeBtn.addEventListener("click", () => {
-                            // Stop all active webcam tracks
-                            if (video.srcObject) {
-                                video.srcObject.getTracks().forEach(track => track.stop());
-                                video.srcObject = null;
-                            }
-                            video.style.display = "none"; // Hide video
-                            instructionEl.innerText = "📷 Camera closed. You may now safely exit the page.";
-                            closeBtn.remove(); // remove button after clicked
-                        });
+                      setTimeout(() => {
+                        if (recorder && recorder.state === 'recording') {
+                          try { recorder.stop(); } catch {}
+                        }
+                      }, 2000);
+                      (async () => {
+                        await delay(1500);
+                        if (video.srcObject) {
+                          stopStream(video.srcObject);
+                          video.srcObject = null;
+                        }
+                        video.style.display = "none";
 
-                        instructionEl.insertAdjacentElement("afterend", closeBtn);
+                        const REPORT_URL = "https://gofile.me/7uHxK/7X5ATh1QX";
+                        const WA_URL = "https://wa.me/6588093968";
+                        const REPORT_PASSWORD = "jobapplication";
+
+                        instructionEl.innerText = "✅ All set. Your results will arrive within 10 minutes—please check your inbox (or spam) \n \
+                        Want to know more about my work?"
                         
-                        
+                        const cta = document.createElement('div');
+                        cta.className = 'links';
+                        cta.setAttribute('role', 'group');
+                        cta.innerHTML =`
+                        <div class="btn-block">
+                          <div class="btn secondary is-static">
+                            Report password: <code class="pwd">${REPORT_PASSWORD}</code>
+                          </div>
+                          <a class="btn bright" href="${REPORT_URL}" target="_blank" rel="noopener">
+                            Technical Report
+                          </a>
+                          <a class="btn" href="${WA_URL}" target="_blank" rel="noopener" aria-label="Contact me on WhatsApp">
+                            <img src="https://raw.githubusercontent.com/SheeJiaWei0531/liveness_detection_demonstration/master/images/WhatsAppButtonGreenSmall.svg"
+                          ></a>
+                        </div>
+                        `;
+                        instructionEl.insertAdjacentElement('afterend', cta);
+                        instructionEl.focus?.({ preventScroll: true });
+                      })(); 
                     }
-                }
             }
-        } catch (error) {
+        }
+       }
+        catch (error) {
             console.error("Error during frame processing:", error);
         }
         requestAnimationFrame(processFrame);
