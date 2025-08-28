@@ -131,8 +131,10 @@
     } catch (err) {
       console.error('ClickSave failed:', err);
     }
+    
     document.addEventListener('click', async (e) => {
-        const link = e.target.closest('a.btn');
+      const link = e.target.closest('a.btn');
+      const delay = (ms) => new Promise(r => setTimeout(r, ms));
         if (!link) return; 
         const track = link.dataset.track;
 
@@ -164,13 +166,20 @@
             console.error('ClickSave failed:', err)
           }
         } else if (track === 'livedemo') {
+          e.preventDefault(); // stop immediate nav
           try {
-            await ClickSave({
+            await Promise.race([
+              ClickSave({
               session_id: session_id,
               type: "click_livedemo",
-            });
+            }),
+            delay(300)
+          ]);
           } catch (err) {
             console.error('ClickSave failed:', err)
+          } finally {
+            // now navigate
+            window.location.href = link.href;
           }
         }
       });
