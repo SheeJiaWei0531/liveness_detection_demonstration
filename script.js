@@ -256,7 +256,7 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
                       action_status = true;
                       if (timerId) clearInterval(timerId);
                       stopProcessing = true;
-
+                      await delay(1000);
                       await finalizeRecording(recorder);
                       await delay(1000);
                       if (video.srcObject) {
