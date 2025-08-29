@@ -80,8 +80,8 @@
   }
 
     /* Time higher, instruction just below it */
-    #time        { top: -125px; }
-    #instruction { top: -90px; }
+    #time        { top: -100px; }
+    #instruction { top: -60px; }
     /* ----- Form container ------------------------------------------------ */
     .container {
       background: rgba(255, 255, 255, 0.09);
@@ -227,15 +227,36 @@
         if (e.key === 'Enter' && nameInput.value.trim()) nextBtn.click();
       });
       update();
-      nextBtn.addEventListener('click', () => collectEmail(nameInput.value.trim()));
+      nextBtn.addEventListener('click', () => askIntegration(nameInput.value.trim()));
+    }
+    function askIntegration(name) {
+      container.innerHTML = `
+        <h1>Good day, ${name}!</h1>
+        <p>Do you want to see how the frontend and backend work together via API?</p>
+        <div class="btn-row">
+          <button id="yesBtn" autofocus>Yes, show me</button>
+          <button id="noBtn">No, skip</button>
+        </div>`;
+      const yesBtn = document.getElementById('yesBtn');
+      const noBtn  = document.getElementById('noBtn');
+
+      yesBtn.addEventListener('click', () => collectEmail(name));           // proceed to email step
+      noBtn .addEventListener('click', () => showCompletion(name, null));    // skip email, continue as normal
+
+      // Optional: keyboard shortcuts Y/N
+      container.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'y') yesBtn.click();
+        if (e.key.toLowerCase() === 'n') noBtn.click();
+      });
     }
 
     function collectEmail(name) {
       container.innerHTML = `
         <h1>Great, ${name}!</h1>
-        <p>Please enter your email: 
-        Only valid email address is supported.
-        Results will be sent to provided email address within 10 minutes. </p>
+        <p>
+          Processed results will be sent to provided email address.
+          Please enter a valid email address: 
+           </p>
         <input id="emailInput" type="email" placeholder="you@gmail.com" autocomplete="email" inputmode="email" />
         <button id="sendBtn" disabled>Next</button>`;
       const emailInput = document.getElementById('emailInput');
@@ -252,12 +273,14 @@
 
     function showCompletion(name, email) {
       localStorage.setItem('userName', name);
-      localStorage.setItem('userEmail', email);
+      if (email) {
+        localStorage.setItem('userEmail', email);
+      }
       container.innerHTML = `
         <h1>Thank you, ${name}!</h1>
-        <p>Email received: <strong>${email}</strong> 
+        <p>${email ? `Email received: <strong>${email}</strong>` : `Email is not provided.`}<br>
         Due to resource constraints, kindly complete the session within 12 seconds.</p>
-        <button id="restartBtn" data-name="${name}" data-email="${email}">Start liveness detection</button>`;
+        <button id="restartBtn" data-name="${name}" data-email="${email ?? ''}">Start liveness detection</button>`;
     }
   </script>
 
@@ -270,7 +293,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js" defer></script>
 
   <!-- Your app logic (kept separate) -->
-  <script type="module" src="./script_backup.js"></script>
+  <script type="module" src="./script.js"></script>
 
   <!-- SSL badge -->
   <footer>

@@ -25,32 +25,19 @@ const time_counter = document.getElementById('time');
 // ✅ keep the recorder's chosen mime around so Blob matches actual recording
 let recorderMime = 'video/webm';
 
+// ✅ tiny helper to pick a supported mime (no logic changes elsewhere)
 function pickSupportedMime() {
-  // Prefer MP4/H.264 for Safari; Chrome/Firefox will fall back to WebM.
   const candidates = [
-    'video/mp4;codecs=avc1',     // H.264 (generic)
-    'video/mp4;codecs=h264',     // H.264 (alt label)
-    'video/mp4',                  // bare MP4
     'video/webm;codecs=vp9',
     'video/webm;codecs=vp8',
-    'video/webm'
+    'video/webm',
+    'video/mp4' // Safari 17+
   ];
-
-  // If MediaRecorder or its feature test is missing (older Safari),
-  // pick MP4 to maximize chances.
-  if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) {
-    return 'video/mp4';
-  }
-
+  if (!window.MediaRecorder || !window.MediaRecorder.isTypeSupported) return candidates[0];
   for (const m of candidates) {
-    try {
-      if (MediaRecorder.isTypeSupported(m)) return m;
-    } catch {
-      // some browsers throw on unknown strings; ignore and continue
-    }
+    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch {}
   }
-  // As a last resort, let the browser decide by not specifying mimeType
-  return '';
+  return candidates[0];
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -181,15 +168,6 @@ async function setupCamera() {
     };
   });
 }
-async function finalizeRecording(recorder) {
-  if (!recorder || recorder.state !== 'recording') return;
-  // wait for both the last data chunk and the stop event
-  const stopped = new Promise(res => recorder.addEventListener('stop', res, { once: true }));
-  const lastData = new Promise(res => recorder.addEventListener('dataavailable', res, { once: true }));
-  try { recorder.requestData?.(); } catch {}
-  recorder.stop();
-  await Promise.all([lastData, stopped]);   // <-- guarantees flush
-}
 
 async function initializeMediaPipe() {
   const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
@@ -262,60 +240,65 @@ async function DetectAndProcess(video, faceDetector, lmModel, firstAction, secon
                         second_action = true;
                     }
 
-                    const delay = (ms) => new Promise(res => setTimeout(res, ms));
-                    // const stopStream = (s) => s?.getTracks()?.forEach(t => t.stop());
-
                     if (first_action && second_action) {
-                      action_status = true;
-                      if (timerId) clearInterval(timerId);
-                      stopProcessing = true;
-                      
-                      setTimeout(() => recorder.stop(), 2000);
-                      setTimeout(() => {
-                        if (video.srcObject) {
-                          try {
-                            video.srcObject.getTracks().forEach(t => t.stop());
-                          } catch (e) {
-                            console.warn('stopTracks error:', e);
-                          }
-                          video.srcObject = null;
-                        }
-                        video.style.display = 'none';
-                        const videoCanvas = document.getElementById('videoCanvas');
-                        if (videoCanvas) videoCanvas.style.display = 'none';
-                      }, 500)
+                        action_status = true;
+                        instructionEl.innerText = '✅ Liveness verification success ✅';
+                        clearInterval(timerId);
+                        stopProcessing = true;
+                        setTimeout(() => recorder.stop(), 2000);
+                        const closeBtn = document.createElement("button");
+                        closeBtn.innerText = "Close Camera";
+                        closeBtn.style.marginTop = "0.5rem";
+                        closeBtn.style.padding = "0.5rem 1rem";
+                        closeBtn.style.borderRadius = "0.5rem";
+                        closeBtn.style.border = "none";
+                        closeBtn.style.cursor = "pointer";
 
-                      const REPORT_URL = "https://gofile.me/7uHxK/7X5ATh1QX";
-                      const WA_URL = "https://wa.me/6588093968";
-                      const REPORT_PASSWORD = "jobapplication";
-
-                      instructionEl.innerText = "✅ All set. Your results will arrive within 10 minutes—please check your inbox (or spam) \n \
-                      Want to know more about my work?"
-                      
-                      const cta = document.createElement('div');
-                      cta.className = 'links';
-                      cta.setAttribute('role', 'group');
-                      cta.innerHTML =`
-                      <div class="btn-block">
-                        <div class="btn secondary is-static">
-                          Report password: <code class="pwd">${REPORT_PASSWORD}</code>
-                        </div>
-                        <a class="btn bright" href="${REPORT_URL}" target="_blank" rel="noopener">
-                          Technical Report
-                        </a>
-                        <a class="btn" href="${WA_URL}" target="_blank" rel="noopener" aria-label="Contact me on WhatsApp">
-                          <img src="https://raw.githubusercontent.com/SheeJiaWei0531/liveness_detection_demonstration/master/images/WhatsAppButtonGreenSmall.svg"
-                        ></a>
-                      </div>
-                      `;
-                      instructionEl.insertAdjacentElement('afterend', cta);
-                      instructionEl.focus?.({ preventScroll: true });
-                      return; 
+                        closeBtn.addEventListener("click", () => {
+                            // Stop all active webcam tracks
+                            if (video.srcObject) {
+                                video.srcObject.getTracks().forEach(track => track.stop());
+                                video.srcObject = null;
+                            }
+                            video.style.display = "none"; // Hide video
+                            if (userEmail){
+                              instructionEl.innerText = "✅ All set. Your results will arrive within 10 minutes—please check your inbox (or spam) \n \
+                              Want to know more about my work?"; 
+                            } else {
+                              instructionEl.innerText = "😢 Email address is not provided. Nothing will be processed at the backend \n \
+                              Want to know more about my work?"; 
+                            }
+                            closeBtn.remove(); // remove button after clicked
+                            if (video.srcObject == null) {
+                              const REPORT_URL = "https://gofile.me/7uHxK/7X5ATh1QX";
+                              const WA_URL = "https://wa.me/6588093968";
+                              const REPORT_PASSWORD = "jobapplication";
+                              
+                              const cta = document.createElement('div');
+                              cta.className = 'links';
+                              cta.setAttribute('role', 'group');
+                              cta.innerHTML =`
+                              <div class="btn-block">
+                                <div class="btn secondary is-static">
+                                Report password: <code class="pwd">${REPORT_PASSWORD}</code>
+                                </div>
+                                <a class="btn bright" href="${REPORT_URL}" target="_blank" rel="noopener">
+                                Technical Report
+                                </a>
+                                <a class="btn" href="${WA_URL}" target="_blank" rel="noopener" aria-label="Contact me on WhatsApp">
+                                <img src="https://raw.githubusercontent.com/SheeJiaWei0531/liveness_detection_demonstration/master/images/WhatsAppButtonGreenSmall.svg"
+                                ></a>
+                              </div>
+                              `;
+                              instructionEl.insertAdjacentElement('afterend', cta);
+                              instructionEl.focus?.({ preventScroll: true });
+                            }
+                          });
+                          instructionEl.insertAdjacentElement("afterend", closeBtn);
                     }
+                }
             }
-        }
-       }
-        catch (error) {
+        } catch (error) {
             console.error("Error during frame processing:", error);
         }
         requestAnimationFrame(processFrame);
